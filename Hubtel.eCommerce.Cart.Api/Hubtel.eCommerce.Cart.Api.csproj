@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20210609222008_AddUserToDb.cs" />
+    <Compile Remove="Migrations\20210609222008_AddUserToDb.Designer.cs" />
+    <Compile Remove="Migrations\20210609222214_AddModelsToDb.cs" />
+    <Compile Remove="Migrations\20210609222214_AddModelsToDb.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="3.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.*" />
+  </ItemGroup>
+
+
+</Project>
