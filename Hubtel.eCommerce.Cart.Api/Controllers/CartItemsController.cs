@@ -123,9 +123,10 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 return NotFound();
             }
 
-            if (item.Quantity > 1)
+            item.Quantity -= cartItem.Quantity;
+
+            if (item.Quantity >= 1)
             {
-                item.Quantity -= cartItem.Quantity;
                 _db.Entry(item).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
             }
