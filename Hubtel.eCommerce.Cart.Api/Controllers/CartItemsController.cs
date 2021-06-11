@@ -18,16 +18,27 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             _db = context;
         }
 
-        // GET: api/CartItems/2335400000000?product=3
-        [HttpGet("{phoneNumber}")]
+        // GET: api/CartItems
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<CartItem>>> GetCarts(
-            string phoneNumber,
+            [FromQuery(Name = "phoneNumber")] string phoneNumber = "",
             [FromQuery(Name = "product")] long productId = 0
         )
         {
             return await _db.CartItems
                 .Where(e => e.User.PhoneNumber == phoneNumber)
                 .Where(e => productId == 0 || (productId != 0 && e.ProductId == productId))
+                .Include(e => e.User)
+                .Include(e => e.Product)
+                .ToListAsync();
+        }
+
+        // GET: api/CartItems/user/3
+        [HttpGet("user/{id}")]
+        public async Task<ActionResult<IEnumerable<CartItem>>> GetUserCart(long id)
+        {
+            return await _db.CartItems
+                .Where(e => e.UserId == id)
                 .Include(e => e.User)
                 .Include(e => e.Product)
                 .ToListAsync();
@@ -91,7 +102,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             CartItem item = await _db.CartItems
                 .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
+                .Include(e => e.User)
                 .SingleOrDefaultAsync();
+
             cartItem.Quantity = cartItem.Quantity != 0 ? cartItem.Quantity : 1;
 
             if (item != null)
@@ -100,7 +113,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 item.Quantity += cartItem.Quantity;
                 await _db.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetCartItem), new { id = item.CartItemId }, item);
+                return CreatedAtAction(nameof(GetUserCart), new { id = item.UserId }, item);
             }
             else
             {
@@ -108,8 +121,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 _db.CartItems.Add(cartItem);
                 await _db.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetCartItem), new { id = cartItem.CartItemId }, cartItem);
+                return CreatedAtAction(nameof(GetUserCart), new { id = cartItem.UserId }, cartItem);
             }
+
         }
 
         // DELETE: api/CartItems
