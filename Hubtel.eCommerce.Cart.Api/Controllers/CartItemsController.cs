@@ -35,12 +35,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/CartItems/user/3
         [HttpGet("user/{id}")]
-        public async Task<ActionResult<IEnumerable<CartItem>>> GetUserCart(long id)
+        public async Task<ActionResult<IEnumerable<CartItemDTO>>> GetUserCart(long id)
         {
             return await _db.CartItems
                 .Where(e => e.UserId == id)
-                .Include(e => e.User)
-                .Include(e => e.Product)
+                .Select(e => new CartItemDTO {
+                    Product = e.Product
+                })
                 .ToListAsync();
         }
 
