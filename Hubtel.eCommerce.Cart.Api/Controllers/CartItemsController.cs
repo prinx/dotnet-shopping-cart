@@ -26,7 +26,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         )
         {
             return await _db.CartItems
-                .Where(e => e.User.PhoneNumber == phoneNumber)
+                .Where(e => phoneNumber == "" || (e.User.PhoneNumber == phoneNumber))
                 .Where(e => productId == 0 || (productId != 0 && e.ProductId == productId))
                 .Include(e => e.User)
                 .Include(e => e.Product)
