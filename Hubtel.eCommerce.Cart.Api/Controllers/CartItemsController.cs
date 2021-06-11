@@ -18,14 +18,15 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             _db = context;
         }
 
-        // GET: api/CartItems
-        [HttpGet]
+        // GET: api/CartItems/2335400000000?product=3
+        [HttpGet("{phoneNumber}")]
         public async Task<ActionResult<IEnumerable<CartItem>>> GetCarts(
-            [FromQuery(Name = "phoneNumber")] string phoneNumber = "",
+            string phoneNumber,
             [FromQuery(Name = "product")] long productId = 0
-        ) {
+        )
+        {
             return await _db.CartItems
-                .Where(e => phoneNumber == "" || (phoneNumber != "" && e.User.PhoneNumber == phoneNumber))
+                .Where(e => e.User.PhoneNumber == phoneNumber)
                 .Where(e => productId == 0 || (productId != 0 && e.ProductId == productId))
                 .Include(e => e.User)
                 .Include(e => e.Product)
@@ -88,7 +89,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<CartItem>> PostCartItem(CartItem cartItem)
         {
-            CartItem item = await _db.CartItems.Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId).SingleOrDefaultAsync();
+            CartItem item = await _db.CartItems
+                .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
+                .SingleOrDefaultAsync();
             cartItem.Quantity = cartItem.Quantity != 0 ? cartItem.Quantity : 1;
 
             if (item != null)
@@ -98,7 +101,8 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 await _db.SaveChangesAsync();
 
                 return CreatedAtAction(nameof(GetCartItem), new { id = item.CartItemId }, item);
-            } else
+            }
+            else
             {
                 _db.Entry(cartItem).State = EntityState.Added;
                 _db.CartItems.Add(cartItem);
