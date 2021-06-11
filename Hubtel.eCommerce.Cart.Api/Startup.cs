@@ -29,7 +29,11 @@ namespace Hubtel.eCommerce.Cart.Api
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                app.UseExceptionHandler("/error-local-development");
+            }
+            else
+            {
+                app.UseExceptionHandler("/error");
             }
 
             // app.UseHttpsRedirection();
