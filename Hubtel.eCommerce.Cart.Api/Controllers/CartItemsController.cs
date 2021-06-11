@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -101,6 +102,26 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<CartItem>> PostCartItem(CartItem cartItem)
         {
+            Product product = await _db.Products.FindAsync(cartItem.ProductId);
+
+            if (product == null)
+            {
+                return BadRequest(new {
+                    status = StatusCodes.Status400BadRequest,
+                    error = "Invalid product"
+                });
+            }
+
+            User user = await _db.Users.FindAsync(cartItem.UserId);
+
+            if (user == null)
+            {
+                return BadRequest(new {
+                    status = StatusCodes.Status400BadRequest,
+                    error = "Invalid user"
+                });
+            }
+
             CartItem item = await _db.CartItems
                 .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
                 .Include(e => e.User)
