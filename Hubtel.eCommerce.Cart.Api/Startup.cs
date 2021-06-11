@@ -32,7 +32,7 @@ namespace Hubtel.eCommerce.Cart.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 
