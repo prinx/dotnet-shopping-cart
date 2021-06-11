@@ -102,6 +102,8 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<CartItem>> PostCartItem(CartItem cartItem)
         {
+            throw new TaskCanceledException();
+
             Product product = await _db.Products.FindAsync(cartItem.ProductId);
 
             if (product == null)
