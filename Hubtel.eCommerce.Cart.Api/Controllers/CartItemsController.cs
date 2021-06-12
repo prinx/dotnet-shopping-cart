@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Net;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -105,30 +107,20 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<CartItem>> PostCartItem(CartItem cartItem)
         {
-            Product product = await _db.Products.FindAsync(cartItem.ProductId);
-
-            if (product == null)
+            try
             {
-                return BadRequest(new {
-                    status = StatusCodes.Status400BadRequest,
-                    error = "Invalid product"
+                await ValidateRequestBody(cartItem);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    status = HttpStatusCode.BadRequest,
+                    error = ex.Message
                 });
             }
 
-            User user = await _db.Users.FindAsync(cartItem.UserId);
-
-            if (user == null)
-            {
-                return BadRequest(new {
-                    status = StatusCodes.Status400BadRequest,
-                    error = "Invalid user"
-                });
-            }
-
-            CartItem item = await _db.CartItems
-                .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
-                .Include(e => e.User)
-                .SingleOrDefaultAsync();
+            CartItem item = await GetDbItemWithUser(cartItem);
 
             cartItem.Quantity = cartItem.Quantity != 0 ? cartItem.Quantity : 1;
 
@@ -150,16 +142,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 return CreatedAtAction(nameof(GetUserCart), new { id = cartItem.UserId }, cartItem);
             }
-
         }
 
         // DELETE: api/CartItems
         [HttpDelete]
         public async Task<ActionResult<CartItem>> DeleteCartItem(CartItem cartItem)
         {
-            CartItem item = await _db.CartItems
-               .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
-               .SingleOrDefaultAsync();
+            CartItem item = await GetDbItem(cartItem);
 
             cartItem.Quantity = cartItem.Quantity != 0 ? cartItem.Quantity : 1;
 
@@ -207,5 +196,36 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             return _db.CartItems.Any(e => e.CartItemId == id);
         }
 
+        private async Task<CartItem> GetDbItem(CartItem cartItem)
+        {
+            return await _db.CartItems
+               .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
+               .SingleOrDefaultAsync();
+        }
+
+        private async Task<CartItem> GetDbItemWithUser(CartItem cartItem)
+        {
+            return await _db.CartItems
+                .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
+                .Include(e => e.User)
+                .SingleOrDefaultAsync();
+        }
+
+        private async Task ValidateRequestBody(CartItem cartItem)
+        {
+            Product product = await _db.Products.FindAsync(cartItem.ProductId);
+
+            if (product == null)
+            {
+                throw new ArgumentException("Invalid product");
+            }
+
+            User user = await _db.Users.FindAsync(cartItem.UserId);
+
+            if (user == null)
+            {
+                throw new ArgumentException("Invalid user");
+            }
+        }
     }
 }
