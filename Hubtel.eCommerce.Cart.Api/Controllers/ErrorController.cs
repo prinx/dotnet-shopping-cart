@@ -10,7 +10,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     public class ErrorController : ControllerBase
     {
         [Route("/error-local-development")]
-        public IActionResult ErrorLocalResult(
+        protected IActionResult ErrorLocalResult(
             [FromServices] IWebHostEnvironment webHostEnvironment)
         {
             if (webHostEnvironment.EnvironmentName != "Development")
@@ -33,7 +33,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         }
 
         [Route("/error")]
-        public IActionResult Error(
+        protected IActionResult Error(
             [FromServices] IWebHostEnvironment webHostEnvironment)
         {
             var feature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
