@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -13,10 +14,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     public class CartItemsController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
+        private readonly ILogger<CartItemsController> _logger;
 
-        public CartItemsController(ApplicationDbContext context)
+        public CartItemsController(ApplicationDbContext context, ILogger<CartItemsController> logger)
         {
             _db = context;
+            _logger = logger;
         }
 
         // GET: api/CartItems
@@ -134,6 +137,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 _db.CartItems.Update(item);
                 item.Quantity += cartItem.Quantity;
                 await _db.SaveChangesAsync();
+                _logger.LogInformation($"Cart item quantity increased for user {cartItem.UserId}");
 
                 return CreatedAtAction(nameof(GetUserCart), new { id = item.UserId }, item);
             }
@@ -142,6 +146,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 _db.Entry(cartItem).State = EntityState.Added;
                 _db.CartItems.Add(cartItem);
                 await _db.SaveChangesAsync();
+                _logger.LogInformation($"New cart item created for user {cartItem.UserId}");
 
                 return CreatedAtAction(nameof(GetUserCart), new { id = cartItem.UserId }, cartItem);
             }
@@ -169,11 +174,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 _db.Entry(item).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
+                _logger.LogInformation($"Product {cartItem.UserId} removed in user {cartItem.UserId}'s cart");
             }
             else
             {
                 _db.CartItems.Remove(item);
                 await _db.SaveChangesAsync();
+                _logger.LogInformation($"Product {cartItem.UserId} removed in user {cartItem.UserId}'s cart");
             }
 
             return item;
