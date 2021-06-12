@@ -79,6 +79,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
+            product.Name.Trim();
+
+            if (_context.Products.Any(e => product.Name == e.Name))
+            {
+                return Conflict();
+            }
+
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
