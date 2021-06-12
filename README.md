@@ -72,6 +72,11 @@ GET http://localhost:5000/api/cartItems
 
 <http://localhost:5000/swagger/index.html>
 
+## Improvments
+
+- Add unit tests
+- Use a service based architecture 
+
 ## LICENSE
 
 [MIT](LICENSE)
