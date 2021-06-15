@@ -70,6 +70,8 @@ GET http://localhost:5000/api/cartItems
 
 ## Swagger link
 
+Use this link Swagger interface after building the project (should open automatically in the browser after a build):
+
 <http://localhost:5000/swagger/index.html>
 
 ## Improvments
