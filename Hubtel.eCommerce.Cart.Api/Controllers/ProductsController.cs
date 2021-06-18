@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -15,10 +16,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger _logger;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(ApplicationDbContext context, ILogger logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Products
@@ -95,6 +98,8 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 }
             }
 
+            _logger.LogInformation($"Product with id {id} updated successfully");
+
             return NoContent();
         }
 
@@ -119,6 +124,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Product {product.Name} created successfully.");
 
             return CreatedAtAction("GetProduct", new { id = product.ProductId }, new
             {
@@ -147,6 +153,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Product with id {id} deleted successfully.");
 
             return Ok(new
             {
