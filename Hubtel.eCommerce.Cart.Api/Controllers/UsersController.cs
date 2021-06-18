@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
+using System.Net;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -29,16 +30,28 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(long id)
+        public async Task<ActionResult<Object>> GetUser(long id)
         {
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.NotFound,
+                    success = false,
+                    message = "User not found.",
+                    data = (Object)null
+                });
             }
 
-            return user;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "Found.",
+                data = user
+            });
         }
 
         // PUT: api/Users/5
@@ -49,7 +62,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             if (id != user.UserId)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    status = HttpStatusCode.BadRequest,
+                    success = false,
+                    message = "Invalid User or Id.",
+                    data = user
+                });
             }
 
             _context.Entry(user).State = EntityState.Modified;
@@ -62,7 +81,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 if (!UserExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.NotFound,
+                        success = false,
+                        message = "User not found.",
+                        data = user
+                    });
                 }
                 else
                 {
@@ -84,13 +109,25 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             if (_context.Users.Any(e => user.PhoneNumber == e.PhoneNumber))
             {
-                return Conflict();
+                return Conflict(new
+                {
+                    status = HttpStatusCode.Conflict,
+                    success = false,
+                    message = "User already exists.",
+                    data = user
+                });
             }
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.UserId }, user);
+            return CreatedAtAction("GetUser", new { id = user.UserId }, new
+            {
+                status = HttpStatusCode.Created,
+                success = true,
+                message = "User created successfully.",
+                data = user
+            });
         }
 
         // DELETE: api/Users/5
@@ -100,13 +137,25 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.NotFound,
+                    success = true,
+                    message = "User not found.",
+                    data = (Object)null
+                });
             }
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return user;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "User deleted usccessfully.",
+                data = (Object)null
+            });
         }
 
         private bool UserExists(long id)

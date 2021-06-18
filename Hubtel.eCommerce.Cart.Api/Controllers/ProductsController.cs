@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
+using System.Net;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -29,16 +30,28 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(long id)
+        public async Task<ActionResult<Object>> GetProduct(long id)
         {
             var product = await _context.Products.FindAsync(id);
 
             if (product == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.NotFound,
+                    success = false,
+                    message = "Product not found.",
+                    data = (Object) null
+                });
             }
 
-            return product;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "Found.",
+                data = product
+            });
         }
 
         // PUT: api/Products/5
@@ -49,7 +62,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             if (id != product.ProductId)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    status = HttpStatusCode.BadRequest,
+                    success = false,
+                    message = "Invalid Product or Id.",
+                    data = product
+                });
             }
 
             _context.Entry(product).State = EntityState.Modified;
@@ -62,7 +81,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 if (!ProductExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.NotFound,
+                        success = false,
+                        message = "Product not found.",
+                        data = product
+                    });
                 }
                 else
                 {
@@ -83,29 +108,53 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             if (_context.Products.Any(e => product.Name == e.Name))
             {
-                return Conflict();
+                return Conflict(new
+                {
+                    status = HttpStatusCode.Conflict,
+                    success = false,
+                    message = "Product already exists.",
+                    data = (Object)null
+                });
             }
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.ProductId }, product);
+            return CreatedAtAction("GetProduct", new { id = product.ProductId }, new
+            {
+                status = HttpStatusCode.Created,
+                success = true,
+                message = "Product created successfully.",
+                data = product
+            });
         }
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Product>> DeleteProduct(long id)
+        public async Task<ActionResult<Object>> DeleteProduct(long id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.Created,
+                    success = true,
+                    message = "Product created successfully.",
+                    data = product
+                });
             }
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
-            return product;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "Product deleted successfully.",
+                data = (Object)null
+            });
         }
 
         private bool ProductExists(long id)

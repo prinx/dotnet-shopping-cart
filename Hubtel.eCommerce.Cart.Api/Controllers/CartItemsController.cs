@@ -31,24 +31,40 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             [FromQuery(Name = "product")] long productId = 0
         )
         {
-            return await _db.CartItems
+            var items = await _db.CartItems
                 .Where(e => phoneNumber == "" || (e.User.PhoneNumber == phoneNumber))
                 .Where(e => productId == 0 || (productId != 0 && e.ProductId == productId))
                 .Include(e => e.User)
                 .Include(e => e.Product)
                 .ToListAsync();
+
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = items.Count == 0,
+                message = items.Count == 0 ? "No cart item found." : "Found.",
+                data = items
+            });
         }
 
         // GET: api/CartItems/user/3
         [HttpGet("user/{id}")]
         public async Task<ActionResult<IEnumerable<CartItemDTO>>> GetUserCart(long id)
         {
-            return await _db.CartItems
+            var items = await _db.CartItems
                 .Where(e => e.UserId == id)
                 .Select(e => new CartItemDTO {
                     Product = e.Product
                 })
                 .ToListAsync();
+
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = items.Count == 0,
+                message = items.Count == 0 ? "No cart item found." : "Found.",
+                data = items
+            });
         }
 
         // GET: api/CartItems/5
@@ -63,10 +79,22 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             if (cartItem == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.NotFound,
+                    success = false,
+                    message =  "Cart item not found.",
+                    data = (Object)null
+                });
             }
 
-            return cartItem;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "Found.",
+                data = cartItem
+            });
         }
 
         // PUT: api/CartItems/5
@@ -77,7 +105,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             if (id != cartItem.CartItemId)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    status = HttpStatusCode.BadRequest,
+                    success = false,
+                    message = "Id or Cart invalid",
+                    data = cartItem
+                });
             }
 
             _db.Entry(cartItem).State = EntityState.Modified;
@@ -90,7 +124,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 if (!CartItemExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.NotFound,
+                        success = false,
+                        message = "Cart not found",
+                        data = cartItem
+                    });
                 }
                 else
                 {
@@ -116,7 +156,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 return BadRequest(new
                 {
                     status = HttpStatusCode.BadRequest,
-                    error = ex.Message
+                    success = false,
+                    message = ex.Message,
+                    data = cartItem
                 });
             }
 
@@ -131,7 +173,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 await _db.SaveChangesAsync();
                 _logger.LogInformation($"Cart item quantity increased for user {cartItem.UserId}");
 
-                return CreatedAtAction(nameof(GetUserCart), new { id = item.UserId }, item);
+                return CreatedAtAction(nameof(GetUserCart), new { id = item.UserId }, new
+                {
+                    status = HttpStatusCode.Created,
+                    success = true,
+                    message = "Product added to cart successfully",
+                    data = item
+                });
             }
             else
             {
@@ -140,7 +188,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 await _db.SaveChangesAsync();
                 _logger.LogInformation($"New cart item created for user {cartItem.UserId}");
 
-                return CreatedAtAction(nameof(GetUserCart), new { id = cartItem.UserId }, cartItem);
+                return CreatedAtAction(nameof(GetUserCart), new { id = cartItem.UserId }, new
+                {
+                    status = HttpStatusCode.Created,
+                    success = true,
+                    message = "Product added to cart successfully",
+                    data = cartItem
+                });
             }
         }
 
@@ -154,7 +208,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             if (item == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.NotFound,
+                    success = false,
+                    message = "Cart item not found",
+                    data = cartItem
+                });
             }
 
             item.Quantity -= cartItem.Quantity;
@@ -172,7 +232,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 _logger.LogInformation($"Product {cartItem.UserId} removed in user {cartItem.UserId}'s cart");
             }
 
-            return item;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "Product deleted successfully from cart",
+                data = (Object)null
+            });
         }
 
         // DELETE: api/CartItems/5
@@ -182,13 +248,25 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             var cartItem = await _db.CartItems.FindAsync(id);
             if (cartItem == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    status = HttpStatusCode.NotFound,
+                    success = false,
+                    message = "Cart item not found",
+                    data = cartItem
+                });
             }
 
             _db.CartItems.Remove(cartItem);
             await _db.SaveChangesAsync();
 
-            return cartItem;
+            return Ok(new
+            {
+                status = HttpStatusCode.OK,
+                success = true,
+                message = "Cart deleted successfully",
+                data = (Object)null
+            });
         }
 
         private bool CartItemExists(long id)

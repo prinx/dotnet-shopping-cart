@@ -21,15 +21,19 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             var feature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
             var ex = feature?.Error;
-            var problemDetails = new ProblemDetails
-            {
-                Status = (int) HttpStatusCode.InternalServerError,
-                Instance = feature?.Path,
-                Title = $"{ex.GetType().Name}: {ex.Message}",
-                Detail = ex.StackTrace,
+            var problemDetails = new {
+                status = (int) HttpStatusCode.InternalServerError,
+                message = $"{ex.GetType().Name}: {ex.Message}",
+                data = new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.InternalServerError,
+                    Instance = feature?.Path,
+                    Title = $"{ex.GetType().Name}: {ex.Message}",
+                    Detail = ex.StackTrace,
+                }
             };
 
-            return StatusCode(problemDetails.Status.Value, problemDetails);
+            return StatusCode(problemDetails.status, problemDetails);
         }
 
         [Route("/error")]
@@ -39,15 +43,20 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             var feature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
             var ex = feature?.Error;
             var isDev = webHostEnvironment.EnvironmentName == "Development";
-            var problemDetails = new ProblemDetails
+            var problemDetails = new
             {
-                Status = (int) HttpStatusCode.InternalServerError,
-                Instance = feature?.Path,
-                Title = isDev ? $"{ex.GetType().Name}: {ex.Message}" : "An error occured.",
-                Detail = isDev ? ex.StackTrace : null,
+                status = (int)HttpStatusCode.InternalServerError,
+                message = isDev ? $"{ex.GetType().Name}: {ex.Message}" : "An error occured.",
+                data = new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.InternalServerError,
+                    Instance = feature?.Path,
+                    Title = isDev ? $"{ex.GetType().Name}: {ex.Message}" : "An error occured.",
+                    Detail = isDev ? ex.StackTrace : null,
+                }
             };
 
-            return StatusCode(problemDetails.Status.Value, problemDetails);
+            return StatusCode(problemDetails.status, problemDetails);
         }
     }
 }
