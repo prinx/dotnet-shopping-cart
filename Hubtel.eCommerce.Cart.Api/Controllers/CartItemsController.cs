@@ -41,7 +41,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             return Ok(new
             {
                 status = HttpStatusCode.OK,
-                success = items.Count == 0,
+                success = items.Count != 0,
                 message = items.Count == 0 ? "No cart item found." : "Found.",
                 data = items
             });
@@ -61,7 +61,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             return Ok(new
             {
                 status = HttpStatusCode.OK,
-                success = items.Count == 0,
+                success = items.Count != 0,
                 message = items.Count == 0 ? "No cart item found." : "Found.",
                 data = items
             });
