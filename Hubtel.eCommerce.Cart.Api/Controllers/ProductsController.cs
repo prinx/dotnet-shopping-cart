@@ -124,7 +124,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
-            _logger.LogInformation($"Product {product.Name} created successfully.");
+            _logger.LogInformation($"Product with name '{product.Name}' created successfully.");
 
             return CreatedAtAction("GetProduct", new { id = product.ProductId }, new
             {
