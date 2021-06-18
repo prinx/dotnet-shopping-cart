@@ -90,8 +90,6 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             CartItem item = await GetDbItemWithUser(cartItem);
 
-            cartItem.Quantity = cartItem.Quantity != 0 ? cartItem.Quantity : 1;
-
             if (item != null)
             {
                 _db.CartItems.Update(item);
@@ -129,8 +127,6 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         public async Task<ActionResult<CartItem>> DeleteCartItem(CartItem cartItem)
         {
             CartItem item = await GetDbItem(cartItem);
-
-            cartItem.Quantity = cartItem.Quantity != 0 ? cartItem.Quantity : 1;
 
             if (item == null)
             {
@@ -189,18 +185,23 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         private async Task ValidateRequestBody(CartItem cartItem)
         {
+            if (cartItem.Quantity <= 0)
+            {
+                throw new ArgumentException("Invalid product quantity.");
+            }
+
             Product product = await _db.Products.FindAsync(cartItem.ProductId);
 
             if (product == null)
             {
-                throw new ArgumentException("Invalid product");
+                throw new ArgumentException("Invalid product.");
             }
 
             User user = await _db.Users.FindAsync(cartItem.UserId);
 
             if (user == null)
             {
-                throw new ArgumentException("Invalid user");
+                throw new ArgumentException("Invalid user.");
             }
         }
     }
