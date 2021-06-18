@@ -67,80 +67,6 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             });
         }
 
-        // GET: api/CartItems/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CartItem>> GetCartItem(long id)
-        {
-            var cartItem = await _db.CartItems
-                .Where(e => e.CartItemId == id)
-                .Include(e => e.User)
-                .Include(e => e.Product)
-                .FirstOrDefaultAsync();
-
-            if (cartItem == null)
-            {
-                return NotFound(new
-                {
-                    status = HttpStatusCode.NotFound,
-                    success = false,
-                    message =  "Cart item not found.",
-                    data = (Object)null
-                });
-            }
-
-            return Ok(new
-            {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "Found.",
-                data = cartItem
-            });
-        }
-
-        // PUT: api/CartItems/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCartItem(long id, CartItem cartItem)
-        {
-            if (id != cartItem.CartItemId)
-            {
-                return BadRequest(new
-                {
-                    status = HttpStatusCode.BadRequest,
-                    success = false,
-                    message = "Id or Cart invalid",
-                    data = cartItem
-                });
-            }
-
-            _db.Entry(cartItem).State = EntityState.Modified;
-
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CartItemExists(id))
-                {
-                    return NotFound(new
-                    {
-                        status = HttpStatusCode.NotFound,
-                        success = false,
-                        message = "Cart not found",
-                        data = cartItem
-                    });
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/CartItems
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
@@ -237,34 +163,6 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 status = HttpStatusCode.OK,
                 success = true,
                 message = "Product deleted successfully from cart",
-                data = (Object)null
-            });
-        }
-
-        // DELETE: api/CartItems/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<CartItem>> DeleteProductFromCartItem(long id)
-        {
-            var cartItem = await _db.CartItems.FindAsync(id);
-            if (cartItem == null)
-            {
-                return NotFound(new
-                {
-                    status = HttpStatusCode.NotFound,
-                    success = false,
-                    message = "Cart item not found",
-                    data = cartItem
-                });
-            }
-
-            _db.CartItems.Remove(cartItem);
-            await _db.SaveChangesAsync();
-
-            return Ok(new
-            {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "Cart deleted successfully",
                 data = (Object)null
             });
         }
