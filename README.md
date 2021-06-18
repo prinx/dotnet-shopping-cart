@@ -62,10 +62,12 @@ Content-type: application/json
 }
 ```
 
-### Get cart items
+This will reduce the quantity of the cart item. The product is deleted when the remaining quantity is less or equal to 0.
+
+### Get user's cart
 
 ```http
-GET http://localhost:5000/api/cartItems
+GET http://localhost:5000/api/cartItems/user/{userId}
 ```
 
 ## Swagger link
