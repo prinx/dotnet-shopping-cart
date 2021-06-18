@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
@@ -15,10 +16,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger _logger;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(ApplicationDbContext context, ILogger logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Users
@@ -95,6 +98,8 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 }
             }
 
+            _logger.LogInformation($"User with id {id} updated successfully.");
+
             return NoContent();
         }
 
@@ -120,6 +125,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"User with phone number {user.PhoneNumber} created successfully.");
 
             return CreatedAtAction("GetUser", new { id = user.UserId }, new
             {
@@ -148,6 +154,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"User with id {id} deleted successfully.");
 
             return Ok(new
             {
