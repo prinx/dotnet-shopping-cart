@@ -177,7 +177,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             return await _db.CartItems
                .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
-               .SingleOrDefaultAsync();
+               .FirstOrDefaultAsync();
         }
 
         private async Task<CartItem> GetDbItemWithUser(CartItemRequestDTO cartItem)
@@ -185,7 +185,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             return await _db.CartItems
                 .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
                 .Include(e => e.User)
-                .SingleOrDefaultAsync();
+                .FirstOrDefaultAsync();
         }
 
         private async Task ValidateRequestBody(CartItemRequestDTO cartItem)
