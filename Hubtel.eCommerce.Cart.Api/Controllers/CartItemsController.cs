@@ -26,7 +26,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/CartItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CartItem>>> GetCarts(
+        public async Task<ActionResult<ApiResponseDTO<IEnumerable<CartItem>>>> GetCarts(
             [FromQuery(Name = "phoneNumber")] string phoneNumber = "",
             [FromQuery(Name = "product")] long productId = 0
         )
@@ -38,18 +38,18 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 .Include(e => e.Product)
                 .ToListAsync();
 
-            return Ok(new
+            return Ok(new ApiResponseDTO
             {
-                status = HttpStatusCode.OK,
-                success = items.Count != 0,
-                message = items.Count == 0 ? "No cart item found." : "Found.",
-                data = items
+                Status = (int)HttpStatusCode.OK,
+                Success = items.Count != 0,
+                Message = items.Count == 0 ? "No cart item found." : "Found.",
+                Data = items
             });
         }
 
         // GET: api/CartItems/user/3
         [HttpGet("user/{id}")]
-        public async Task<ActionResult<IEnumerable<CartItemDTO>>> GetUserCart(long id)
+        public async Task<ActionResult<ApiResponseDTO<IEnumerable<CartItemDTO>>>> GetUserCart(long id)
         {
             var items = await _db.CartItems
                 .Where(e => e.UserId == id)
@@ -58,12 +58,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(new
+            return Ok(new ApiResponseDTO
             {
-                status = HttpStatusCode.OK,
-                success = items.Count != 0,
-                message = items.Count == 0 ? "No cart item found." : "Found.",
-                data = items
+                Status = (int)HttpStatusCode.OK,
+                Success = items.Count != 0,
+                Message = items.Count == 0 ? "No cart item found." : "Found.",
+                Data = items
             });
         }
 
@@ -71,7 +71,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<CartItem>> PostCartItem(CartItem cartItem)
+        public async Task<ActionResult<ApiResponseDTO<CartItem>>> PostCartItem([FromBody] CartItemRequestDTO cartItem)
         {
             try
             {
@@ -79,12 +79,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             }
             catch(ArgumentException ex)
             {
-                return BadRequest(new
+                return BadRequest(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.BadRequest,
-                    success = false,
-                    message = ex.Message,
-                    data = cartItem
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Success = false,
+                    Message = ex.Message,
+                    Data = cartItem
                 });
             }
 
@@ -108,7 +108,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             else
             {
                 _db.Entry(cartItem).State = EntityState.Added;
-                _db.CartItems.Add(cartItem);
+                _db.CartItems.Add(new CartItem
+                {
+                    UserId = cartItem.UserId,
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity
+                });
                 await _db.SaveChangesAsync();
                 _logger.LogInformation($"New cart item created for user {cartItem.UserId}");
 
@@ -124,18 +129,18 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // DELETE: api/CartItems
         [HttpDelete]
-        public async Task<ActionResult<CartItem>> DeleteCartItem(CartItem cartItem)
+        public async Task<ActionResult<ApiResponseDTO>> DeleteCartItem([FromBody] CartItemRequestDTO cartItem)
         {
             CartItem item = await GetDbItem(cartItem);
 
             if (item == null)
             {
-                return NotFound(new
+                return NotFound(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.NotFound,
-                    success = false,
-                    message = "Cart item not found",
-                    data = cartItem
+                    Status = (int)HttpStatusCode.NotFound,
+                    Success = false,
+                    Message = "Cart item not found",
+                    Data = cartItem
                 });
             }
 
@@ -154,12 +159,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 _logger.LogInformation($"Product {cartItem.UserId} removed in user {cartItem.UserId}'s cart");
             }
 
-            return Ok(new
+            return Ok(new ApiResponseDTO
             {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "Product deleted successfully from cart",
-                data = (Object)null
+                Status = (int) HttpStatusCode.OK,
+                Success = true,
+                Message = "Product deleted successfully from cart",
+                Data = (Object)null
             });
         }
 
@@ -168,14 +173,14 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             return _db.CartItems.Any(e => e.CartItemId == id);
         }
 
-        private async Task<CartItem> GetDbItem(CartItem cartItem)
+        private async Task<CartItem> GetDbItem(CartItemRequestDTO cartItem)
         {
             return await _db.CartItems
                .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
                .SingleOrDefaultAsync();
         }
 
-        private async Task<CartItem> GetDbItemWithUser(CartItem cartItem)
+        private async Task<CartItem> GetDbItemWithUser(CartItemRequestDTO cartItem)
         {
             return await _db.CartItems
                 .Where(e => e.UserId == cartItem.UserId && e.ProductId == cartItem.ProductId)
@@ -183,7 +188,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 .SingleOrDefaultAsync();
         }
 
-        private async Task ValidateRequestBody(CartItem cartItem)
+        private async Task ValidateRequestBody(CartItemRequestDTO cartItem)
         {
             if (cartItem.Quantity <= 0)
             {
