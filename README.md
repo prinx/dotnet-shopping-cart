@@ -31,7 +31,7 @@ Content-type: application/json
     "inStock": true
 }
 ```
-6
+
 ### Add item to cart
 
 ```http
