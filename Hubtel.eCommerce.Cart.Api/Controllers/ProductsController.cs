@@ -21,7 +21,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<ApiResponseDTO<IEnumerable<Product>>>> GetProducts()
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Object>> GetProduct(long id)
+        public async Task<ActionResult<ApiResponseDTO<Product>>> GetProduct(long id)
         {
             try
             {
@@ -131,7 +131,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<ApiResponseDTO<Product>>> PostProduct(Product product)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Object>> DeleteProduct(long id)
+        public async Task<ActionResult<ApiResponseDTO<Product>>> DeleteProduct(long id)
         {
             try
             {

@@ -117,7 +117,6 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 }
                 else
                 {
-                    _context.Entry(cartItem).State = EntityState.Added;
                     _context.CartItems.Add(new CartItem
                     {
                         UserId = cartItem.UserId,
@@ -166,7 +165,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 if (item.Quantity >= 1)
                 {
-                    _context.Entry(item).State = EntityState.Modified;
+                    _context.CartItems.Attach(item);
                     await _context.SaveChangesAsync();
                     _logger.LogInformation($"Product {cartItem.UserId} removed in user {cartItem.UserId}'s cart");
                 }

@@ -20,7 +20,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<ApiResponseDTO<IEnumerable<User>>>> GetUsers()
         {
             try
             {
@@ -42,7 +42,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Object>> GetUser(long id)
+        public async Task<ActionResult<ApiResponseDTO<User>>> GetUser(long id)
         {
             try
             {
@@ -130,7 +130,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<ApiResponseDTO<User>>> PostUser(User user)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> DeleteUser(long id)
+        public async Task<ActionResult<ApiResponseDTO<User>>> DeleteUser(long id)
         {
             try
             {
