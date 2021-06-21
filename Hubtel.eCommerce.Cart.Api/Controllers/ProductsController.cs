@@ -135,7 +135,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             try
             {
-                product.Name.Trim();
+                product.Name = product.Name.Trim();
 
                 if (_context.Products.Any(e => product.Name == e.Name))
                 {

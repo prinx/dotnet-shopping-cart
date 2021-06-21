@@ -14,7 +14,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     [ApiController]
     public class UsersController : CustomBaseController
     {
-        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger): base(context, logger)
+        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger) : base(context, logger)
         {
         }
 
@@ -132,11 +132,11 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            user.Name.Trim();
-            user.PhoneNumber.Trim();
-
             try
             {
+                user.Name = user.Name.Trim();
+                user.PhoneNumber = user.PhoneNumber.Trim();
+
                 if (_context.Users.Any(e => user.PhoneNumber == e.PhoneNumber))
                 {
                     return Conflict(new ApiResponseDTO
