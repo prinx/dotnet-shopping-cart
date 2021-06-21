@@ -90,10 +90,10 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 });
             }
 
-            _context.Entry(user).State = EntityState.Modified;
 
             try
             {
+                _context.Entry(user).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException DbUpdateException)
