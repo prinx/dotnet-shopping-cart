@@ -12,48 +12,57 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
     [Route("api/users")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : CustomBaseController
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<UsersController> _logger;
-
-        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
+        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger): base(context, logger)
         {
-            _context = context;
-            _logger = logger;
         }
 
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            try
+            {
+                return await _context.Users.ToListAsync();
+            }
+            catch (Exception e)
+            {
+                return GenericError($"An error happened while retrieving users from database: {e}");
+            }
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Object>> GetUser(long id)
         {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
+            try
             {
-                return NotFound(new
+                var user = await _context.Users.FindAsync(id);
+
+                if (user == null)
                 {
-                    status = HttpStatusCode.NotFound,
-                    success = false,
-                    message = "User not found.",
-                    data = (Object)null
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.NotFound,
+                        success = false,
+                        message = "User not found.",
+                        data = (Object)null
+                    });
+                }
+
+                return Ok(new
+                {
+                    status = HttpStatusCode.OK,
+                    success = true,
+                    message = "Found.",
+                    data = user
                 });
             }
-
-            return Ok(new
+            catch (Exception e)
             {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "Found.",
-                data = user
-            });
+                return GenericError($"An error happened while retrieving user from database: {e}");
+            }
         }
 
         // PUT: api/Users/5
@@ -79,21 +88,28 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException DbUpdateException)
             {
-                if (!UserExists(id))
+                try
                 {
-                    return NotFound(new
+                    if (!UserExists(id))
                     {
-                        status = HttpStatusCode.NotFound,
-                        success = false,
-                        message = "User not found.",
-                        data = user
-                    });
+                        return NotFound(new
+                        {
+                            status = HttpStatusCode.NotFound,
+                            success = false,
+                            message = "User not found.",
+                            data = user
+                        });
+                    }
+                    else
+                    {
+                        return GenericError($"An error happened while updating user: {DbUpdateException}");
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    throw;
+                    return GenericError($"An error happened while updating user: {e}");
                 }
             }
 
@@ -111,57 +127,72 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             user.Name.Trim();
             user.PhoneNumber.Trim();
 
-            if (_context.Users.Any(e => user.PhoneNumber == e.PhoneNumber))
+            try
             {
-                return Conflict(new
+                if (_context.Users.Any(e => user.PhoneNumber == e.PhoneNumber))
                 {
-                    status = HttpStatusCode.Conflict,
-                    success = false,
-                    message = "User already exists.",
+                    return Conflict(new
+                    {
+                        status = HttpStatusCode.Conflict,
+                        success = false,
+                        message = "User already exists.",
+                        data = user
+                    });
+                }
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"User with phone number {user.PhoneNumber} created successfully.");
+
+                return CreatedAtAction("GetUser", new { id = user.UserId }, new
+                {
+                    status = HttpStatusCode.Created,
+                    success = true,
+                    message = "User created successfully.",
                     data = user
                 });
             }
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"User with phone number {user.PhoneNumber} created successfully.");
-
-            return CreatedAtAction("GetUser", new { id = user.UserId }, new
+            catch (Exception e)
             {
-                status = HttpStatusCode.Created,
-                success = true,
-                message = "User created successfully.",
-                data = user
-            });
+                return GenericError($"An error happened while creating user: {e}");
+            }
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<User>> DeleteUser(long id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound(new
+                var user = await _context.Users.FindAsync(id);
+
+                if (user == null)
                 {
-                    status = HttpStatusCode.NotFound,
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.NotFound,
+                        success = true,
+                        message = "User not found.",
+                        data = (Object)null
+                    });
+                }
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"User with id {id} deleted successfully.");
+
+                return Ok(new
+                {
+                    status = HttpStatusCode.OK,
                     success = true,
-                    message = "User not found.",
+                    message = "User deleted usccessfully.",
                     data = (Object)null
                 });
             }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"User with id {id} deleted successfully.");
-
-            return Ok(new
+            catch (Exception e)
             {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "User deleted usccessfully.",
-                data = (Object)null
-            });
+                return GenericError($"An error happened while deleting user with id {id}: {e}");
+            }
         }
 
         private bool UserExists(long id)

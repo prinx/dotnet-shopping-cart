@@ -13,48 +13,57 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductsController : CustomBaseController
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<ProductsController> _logger;
-
-        public ProductsController(ApplicationDbContext context, ILogger<ProductsController> logger)
+        public ProductsController(ApplicationDbContext context, ILogger<ProductsController> logger) : base(context, logger)
         {
-            _context = context;
-            _logger = logger;
         }
 
         // GET: api/Products
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            try
+            {
+                return await _context.Products.ToListAsync();
+            }
+            catch (Exception e)
+            {
+                return GenericError($"An error happened while retrieving products from database: {e}");
+            }
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Object>> GetProduct(long id)
         {
-            var product = await _context.Products.FindAsync(id);
-
-            if (product == null)
+            try
             {
-                return NotFound(new
+                var product = await _context.Products.FindAsync(id);
+
+                if (product == null)
                 {
-                    status = HttpStatusCode.NotFound,
-                    success = false,
-                    message = "Product not found.",
-                    data = (Object) null
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.NotFound,
+                        success = false,
+                        message = "Product not found.",
+                        data = (Object)null
+                    });
+                }
+
+                return Ok(new
+                {
+                    status = HttpStatusCode.OK,
+                    success = true,
+                    message = "Found.",
+                    data = product
                 });
             }
-
-            return Ok(new
+            catch (Exception e)
             {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "Found.",
-                data = product
-            });
+                return GenericError($"An error happened while retrieving product from database: {e}");
+            }
         }
 
         // PUT: api/Products/5
@@ -80,21 +89,28 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException dbUpdateException)
             {
-                if (!ProductExists(id))
+                try
                 {
-                    return NotFound(new
+                    if (!ProductExists(id))
                     {
-                        status = HttpStatusCode.NotFound,
-                        success = false,
-                        message = "Product not found.",
-                        data = product
-                    });
+                        return NotFound(new
+                        {
+                            status = HttpStatusCode.NotFound,
+                            success = false,
+                            message = "Product not found.",
+                            data = product
+                        });
+                    }
+                    else
+                    {
+                        return GenericError($"An error happened while updating product: {dbUpdateException}");
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    throw;
+                    return GenericError($"An error happened while updating product: {e}");
                 }
             }
 
@@ -109,40 +125,26 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
-            product.Name.Trim();
-
-            if (_context.Products.Any(e => product.Name == e.Name))
+            try
             {
-                return Conflict(new
+                product.Name.Trim();
+
+                if (_context.Products.Any(e => product.Name == e.Name))
                 {
-                    status = HttpStatusCode.Conflict,
-                    success = false,
-                    message = "Product already exists.",
-                    data = (Object)null
-                });
-            }
+                    return Conflict(new
+                    {
+                        status = HttpStatusCode.Conflict,
+                        success = false,
+                        message = "Product already exists.",
+                        data = (Object)null
+                    });
+                }
 
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"Product with name '{product.Name}' created successfully.");
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Product with name '{product.Name}' created successfully.");
 
-            return CreatedAtAction("GetProduct", new { id = product.ProductId }, new
-            {
-                status = HttpStatusCode.Created,
-                success = true,
-                message = "Product created successfully.",
-                data = product
-            });
-        }
-
-        // DELETE: api/Products/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Object>> DeleteProduct(long id)
-        {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound(new
+                return CreatedAtAction("GetProduct", new { id = product.ProductId }, new
                 {
                     status = HttpStatusCode.Created,
                     success = true,
@@ -150,18 +152,48 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                     data = product
                 });
             }
-
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"Product with id {id} deleted successfully.");
-
-            return Ok(new
+            catch (Exception e)
             {
-                status = HttpStatusCode.OK,
-                success = true,
-                message = "Product deleted successfully.",
-                data = (Object)null
-            });
+                return GenericError($"An error happened while retrieving product from database: {e}");
+            }
+        }
+
+        // DELETE: api/Products/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Object>> DeleteProduct(long id)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(id);
+
+                if (product == null)
+                {
+                    return NotFound(new
+                    {
+                        status = HttpStatusCode.Created,
+                        success = true,
+                        message = "Product created successfully.",
+                        data = product
+                    });
+                }
+
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Product with id {id} deleted successfully.");
+
+                return Ok(new
+                {
+                    status = HttpStatusCode.OK,
+                    success = true,
+                    message = "Product deleted successfully.",
+                    data = (Object)null
+                });
+
+            }
+            catch (Exception e)
+            {
+                return GenericError($"An error happened while deleting product: {e}");
+            }
         }
 
         private bool ProductExists(long id)
