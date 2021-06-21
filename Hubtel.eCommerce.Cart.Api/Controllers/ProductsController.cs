@@ -170,9 +170,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 {
                     return NotFound(new
                     {
-                        status = HttpStatusCode.Created,
-                        success = true,
-                        message = "Product created successfully.",
+                        status = HttpStatusCode.NotFound,
+                        success = false,
+                        message = "Product not found.",
                         data = product
                     });
                 }
