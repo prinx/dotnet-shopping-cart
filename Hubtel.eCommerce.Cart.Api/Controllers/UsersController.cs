@@ -24,7 +24,15 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             try
             {
-                return await _context.Users.ToListAsync();
+                var items = await _context.Users.ToListAsync();
+
+                return Ok(new ApiResponseDTO
+                {
+                    Status = (int)HttpStatusCode.OK,
+                    Success = items.Count != 0,
+                    Message = items.Count == 0 ? "No user found." : "Found.",
+                    Data = items
+                });
             }
             catch (Exception e)
             {
@@ -42,21 +50,21 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 if (user == null)
                 {
-                    return NotFound(new
+                    return NotFound(new ApiResponseDTO
                     {
-                        status = HttpStatusCode.NotFound,
-                        success = false,
-                        message = "User not found.",
-                        data = (Object)null
+                        Status = (int)HttpStatusCode.NotFound,
+                        Success = false,
+                        Message = "User not found.",
+                        Data = (Object)null
                     });
                 }
 
-                return Ok(new
+                return Ok(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.OK,
-                    success = true,
-                    message = "Found.",
-                    data = user
+                    Status = (int)HttpStatusCode.OK,
+                    Success = true,
+                    Message = "Found.",
+                    Data = user
                 });
             }
             catch (Exception e)
@@ -73,12 +81,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             if (id != user.UserId)
             {
-                return BadRequest(new
+                return BadRequest(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.BadRequest,
-                    success = false,
-                    message = "Invalid User or Id.",
-                    data = user
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Success = false,
+                    Message = "Invalid User or Id.",
+                    Data = user
                 });
             }
 
@@ -94,12 +102,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 {
                     if (!UserExists(id))
                     {
-                        return NotFound(new
+                        return NotFound(new ApiResponseDTO
                         {
-                            status = HttpStatusCode.NotFound,
-                            success = false,
-                            message = "User not found.",
-                            data = user
+                            Status = (int)HttpStatusCode.NotFound,
+                            Success = false,
+                            Message = "User not found.",
+                            Data = user
                         });
                     }
                     else
@@ -131,12 +139,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 if (_context.Users.Any(e => user.PhoneNumber == e.PhoneNumber))
                 {
-                    return Conflict(new
+                    return Conflict(new ApiResponseDTO
                     {
-                        status = HttpStatusCode.Conflict,
-                        success = false,
-                        message = "User already exists.",
-                        data = user
+                        Status = (int)HttpStatusCode.Conflict,
+                        Success = false,
+                        Message = "User already exists.",
+                        Data = user
                     });
                 }
 
@@ -144,12 +152,13 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"User with phone number {user.PhoneNumber} created successfully.");
 
-                return CreatedAtAction("GetUser", new { id = user.UserId }, new
+
+                return CreatedAtAction("GetUser", new { id = user.UserId }, new ApiResponseDTO
                 {
-                    status = HttpStatusCode.Created,
-                    success = true,
-                    message = "User created successfully.",
-                    data = user
+                    Status = (int)HttpStatusCode.Created,
+                    Success = true,
+                    Message = "User created successfully.",
+                    Data = user
                 });
             }
             catch (Exception e)
@@ -168,12 +177,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 if (user == null)
                 {
-                    return NotFound(new
+                    return NotFound(new ApiResponseDTO
                     {
-                        status = HttpStatusCode.NotFound,
-                        success = true,
-                        message = "User not found.",
-                        data = (Object)null
+                        Status = (int)HttpStatusCode.NotFound,
+                        Success = false,
+                        Message = "User not found.",
+                        Data = (Object)null
                     });
                 }
 
@@ -181,12 +190,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"User with id {id} deleted successfully.");
 
-                return Ok(new
+                return Ok(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.OK,
-                    success = true,
-                    message = "User deleted usccessfully.",
-                    data = (Object)null
+                    Status = (int)HttpStatusCode.OK,
+                    Success = true,
+                    Message = "User deleted usccessfully.",
+                    Data = (Object)null
                 });
             }
             catch (Exception e)

@@ -25,7 +25,15 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             try
             {
-                return await _context.Products.ToListAsync();
+                var products = await _context.Products.ToListAsync();
+
+                return Ok(new ApiResponseDTO
+                {
+                    Status = (int)HttpStatusCode.OK,
+                    Success = true,
+                    Message = "Found.",
+                    Data = products
+                });
             }
             catch (Exception e)
             {
@@ -43,21 +51,21 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 if (product == null)
                 {
-                    return NotFound(new
+                    return NotFound(new ApiResponseDTO
                     {
-                        status = HttpStatusCode.NotFound,
-                        success = false,
-                        message = "Product not found.",
-                        data = (Object)null
+                        Status = (int)HttpStatusCode.NotFound,
+                        Success = false,
+                        Message = "Product not found.",
+                        Data = (Object)null
                     });
                 }
 
-                return Ok(new
+                return Ok(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.OK,
-                    success = true,
-                    message = "Found.",
-                    data = product
+                    Status = (int)HttpStatusCode.OK,
+                    Success = true,
+                    Message = "Found.",
+                    Data = product
                 });
             }
             catch (Exception e)
@@ -74,12 +82,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             if (id != product.ProductId)
             {
-                return BadRequest(new
+                return BadRequest(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.BadRequest,
-                    success = false,
-                    message = "Invalid Product or Id.",
-                    data = product
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Success = false,
+                    Message = "Invalid Product or Id.",
+                    Data = product
                 });
             }
 
@@ -95,12 +103,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 {
                     if (!ProductExists(id))
                     {
-                        return NotFound(new
+                        return NotFound(new ApiResponseDTO
                         {
-                            status = HttpStatusCode.NotFound,
-                            success = false,
-                            message = "Product not found.",
-                            data = product
+                            Status = (int)HttpStatusCode.NotFound,
+                            Success = false,
+                            Message = "Product not found.",
+                            Data = product
                         });
                     }
                     else
@@ -131,12 +139,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 if (_context.Products.Any(e => product.Name == e.Name))
                 {
-                    return Conflict(new
+                    return Conflict(new ApiResponseDTO
                     {
-                        status = HttpStatusCode.Conflict,
-                        success = false,
-                        message = "Product already exists.",
-                        data = (Object)null
+                        Status = (int)HttpStatusCode.Conflict,
+                        Success = false,
+                        Message = "Product already exists.",
+                        Data = (Object)null
                     });
                 }
 
@@ -144,12 +152,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Product with name '{product.Name}' created successfully.");
 
-                return CreatedAtAction("GetProduct", new { id = product.ProductId }, new
+                return CreatedAtAction("GetProduct", new { id = product.ProductId }, new ApiResponseDTO
                 {
-                    status = HttpStatusCode.Created,
-                    success = true,
-                    message = "Product created successfully.",
-                    data = product
+                    Status = (int)HttpStatusCode.Created,
+                    Success = true,
+                    Message = "Product created successfully.",
+                    Data = product
                 });
             }
             catch (Exception e)
@@ -168,25 +176,25 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
 
                 if (product == null)
                 {
-                    return NotFound(new
+                    return NotFound(new ApiResponseDTO
                     {
-                        status = HttpStatusCode.NotFound,
-                        success = false,
-                        message = "Product not found.",
-                        data = product
+                        Status = (int)HttpStatusCode.NotFound,
+                        Success = false,
+                        Message = "Product not found.",
+                        Data = product
                     });
                 }
 
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Product with id {id} deleted successfully.");
-
-                return Ok(new
+                
+                return Ok(new ApiResponseDTO
                 {
-                    status = HttpStatusCode.OK,
-                    success = true,
-                    message = "Product deleted successfully.",
-                    data = (Object)null
+                    Status = (int)HttpStatusCode.OK,
+                    Success = true,
+                    Message = "Product deleted successfully.",
+                    Data = (Object)null
                 });
 
             }
