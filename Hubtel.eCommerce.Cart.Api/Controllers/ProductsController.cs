@@ -16,9 +16,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger _logger;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(ApplicationDbContext context, ILogger logger)
+        public ProductsController(ApplicationDbContext context, ILogger<ProductsController> logger)
         {
             _context = context;
             _logger = logger;

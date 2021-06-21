@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
@@ -16,9 +15,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger _logger;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(ApplicationDbContext context, ILogger logger)
+        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
         {
             _context = context;
             _logger = logger;
