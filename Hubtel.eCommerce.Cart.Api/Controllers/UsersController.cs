@@ -79,46 +79,31 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(long id, User user)
         {
-            if (id != user.UserId)
-            {
-                return BadRequest(new ApiResponseDTO
-                {
-                    Status = (int)HttpStatusCode.BadRequest,
-                    Success = false,
-                    Message = "Invalid User or Id.",
-                    Data = user
-                });
-            }
-
-
             try
             {
-                _context.Entry(user).State = EntityState.Modified;
+                var userToUpdate = await _context.Users.FindAsync(id);
+
+                if (userToUpdate == null)
+                {
+                    return NotFound(new ApiResponseDTO
+                    {
+                        Status = (int)HttpStatusCode.NotFound,
+                        Success = false,
+                        Message = "User not found.",
+                        Data = user
+                    });
+                }
+
+                _context.Users.Attach(userToUpdate);
+
+                userToUpdate.Name = user.Name != "" ? user.Name : userToUpdate.Name;
+                userToUpdate.PhoneNumber = user.PhoneNumber != "" ? user.PhoneNumber : userToUpdate.PhoneNumber;
+
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException DbUpdateException)
+            catch (Exception e)
             {
-                try
-                {
-                    if (!UserExists(id))
-                    {
-                        return NotFound(new ApiResponseDTO
-                        {
-                            Status = (int)HttpStatusCode.NotFound,
-                            Success = false,
-                            Message = "User not found.",
-                            Data = user
-                        });
-                    }
-                    else
-                    {
-                        return GenericError($"An error happened while updating user: {DbUpdateException}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    return GenericError($"An error happened while updating user: {e}");
-                }
+                return GenericError($"An error happened while updating user: {e}");
             }
 
             _logger.LogInformation($"User with id {id} updated successfully.");
