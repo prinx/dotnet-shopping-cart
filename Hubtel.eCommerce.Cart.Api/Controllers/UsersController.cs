@@ -199,10 +199,5 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 return GenericError($"An error happened while deleting user with id {id}: {e}");
             }
         }
-
-        private bool UserExists(long id)
-        {
-            return _context.Users.Any(e => e.UserId == id);
-        }
     }
 }

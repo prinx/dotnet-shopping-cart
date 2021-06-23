@@ -201,10 +201,5 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 return GenericError($"An error happened while deleting product: {e}");
             }
         }
-
-        private bool ProductExists(long id)
-        {
-            return _context.Products.Any(e => e.ProductId == id);
-        }
     }
 }
