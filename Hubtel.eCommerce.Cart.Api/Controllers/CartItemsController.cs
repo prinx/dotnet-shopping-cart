@@ -21,19 +21,21 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         // GET: api/CartItems
         [HttpGet]
         public async Task<ActionResult<ApiResponseDTO<IEnumerable<CartItem>>>> GetCarts(
-            [FromQuery(Name = "phoneNumber")] string phoneNumber = "",
-            [FromQuery(Name = "product")] long productId = 0,
-            [FromQuery(Name = "quantity")] int quantity = 0,
-            [FromQuery(Name = "from")] DateTime? from = null,
-            [FromQuery(Name = "to")] DateTime? to = null
+            [FromQuery] string phoneNumber = null,
+            [FromQuery] long? productId = null,
+            [FromQuery] int? quantity = null,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null
         )
         {
             try
             {
+                ValidateGetAllCartItemsQueryString(phoneNumber, productId, quantity, from, to);
+
                 var items = await _context.CartItems
-                    .Where(e => phoneNumber == "" || (e.User.PhoneNumber == phoneNumber))
-                    .Where(e => productId == 0 || (productId != 0 && e.ProductId == productId))
-                    .Where(e => quantity == 0 || (quantity != 0 && e.Quantity == quantity))
+                    .Where(e => phoneNumber == null || (phoneNumber != null && e.User.PhoneNumber == phoneNumber))
+                    .Where(e => productId == null || (productId != null && e.ProductId == productId))
+                    .Where(e => quantity == null || (quantity != null && e.Quantity == quantity))
                     .Where(e => from == null || (from != null && e.CreatedAt >= from))
                     .Where(e => to == null || (to != null && e.CreatedAt <= to))
                     .Include(e => e.User)
@@ -43,9 +45,19 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 return Ok(new ApiResponseDTO
                 {
                     Status = (int)HttpStatusCode.OK,
-                    Success = items.Count != 0,
+                    Success = true,
                     Message = items.Count == 0 ? "No cart item found." : "Found.",
                     Data = items
+                });
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(new ApiResponseDTO
+                {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Success = false,
+                    Message = e.Message,
+                    Data = null
                 });
             }
             catch (Exception e)
@@ -211,9 +223,32 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             }
         }
 
-        private bool CartItemExists(long id)
-        {
-            return _context.CartItems.Any(e => e.CartItemId == id);
+        private void ValidateGetAllCartItemsQueryString(
+            string phoneNumber = null,
+            long? productId = null,
+            int? quantity = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null
+        ) {
+            if (phoneNumber != null && (phoneNumber.Length > 12 || phoneNumber.Length < 9))
+            {
+                throw new ArgumentException("Invalid phone number");
+            }
+
+            if (productId != null && productId <= 0)
+            {
+                throw new ArgumentException("Product id must be greater than 0");
+            }
+
+            if (quantity != null && quantity <= 0)
+            {
+                throw new ArgumentException("Quantity must be greater than 0");
+            }
+
+            if (startDate != null && endDate != null && startDate > endDate)
+            {
+                throw new ArgumentException("Start date must be less than end date");
+            }
         }
 
         private async Task<CartItem> GetDbItem(CartItemRequestDTO cartItem)
