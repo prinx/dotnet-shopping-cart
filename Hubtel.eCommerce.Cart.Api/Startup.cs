@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using Hubtel.eCommerce.Cart.Api.Validation;
 
 namespace Hubtel.eCommerce.Cart.Api
 {
@@ -24,9 +26,21 @@ namespace Hubtel.eCommerce.Cart.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
+            services.AddDbContext<ApplicationDbContext>(
+                options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+            );
+            
+            services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var problems = new CustomBadRequest(context);
+                    return new BadRequestObjectResult(problems);
+                };
+            });
+
             services.AddMvc();
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc(ApiVersion, new OpenApiInfo { Title = ApiTitle, Version = ApiVersion });
