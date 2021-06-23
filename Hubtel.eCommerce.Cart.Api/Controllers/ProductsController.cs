@@ -80,51 +80,49 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct(long id, Product product)
         {
-            if (id != product.ProductId)
-            {
-                return BadRequest(new ApiResponseDTO
-                {
-                    Status = (int)HttpStatusCode.BadRequest,
-                    Success = false,
-                    Message = "Invalid Product or Id.",
-                    Data = product
-                });
-            }
-
-            _context.Entry(product).State = EntityState.Modified;
-
             try
             {
+                if (id != product.ProductId)
+                {
+                    return BadRequest(new ApiResponseDTO
+                    {
+                        Status = (int)HttpStatusCode.BadRequest,
+                        Success = false,
+                        Message = "Invalid product id.",
+                        Data = product
+                    });
+                }
+
+                var productToUpdate = await _context.Products.FindAsync(id);
+
+                if (productToUpdate == null)
+                {
+                    return NotFound(new ApiResponseDTO
+                    {
+                        Status = (int)HttpStatusCode.NotFound,
+                        Success = false,
+                        Message = "Product not found.",
+                        Data = product
+                    });
+                }
+
+                _context.Products.Attach(productToUpdate);
+
+                productToUpdate.Name = product.Name;
+                productToUpdate.Price = product.Price;
+                productToUpdate.InStock = product.InStock;
+
                 await _context.SaveChangesAsync();
+
+
+                _logger.LogInformation($"Product with id {id} updated successfully");
+
+                return NoContent();
             }
-            catch (DbUpdateConcurrencyException dbUpdateException)
+            catch (Exception e)
             {
-                try
-                {
-                    if (!ProductExists(id))
-                    {
-                        return NotFound(new ApiResponseDTO
-                        {
-                            Status = (int)HttpStatusCode.NotFound,
-                            Success = false,
-                            Message = "Product not found.",
-                            Data = product
-                        });
-                    }
-                    else
-                    {
-                        return GenericError($"An error happened while updating product: {dbUpdateException}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    return GenericError($"An error happened while updating product: {e}");
-                }
+                return GenericError($"An error happened while updating product: {e}");
             }
-
-            _logger.LogInformation($"Product with id {id} updated successfully");
-
-            return NoContent();
         }
 
         // POST: api/Products
@@ -188,7 +186,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Product with id {id} deleted successfully.");
-                
+
                 return Ok(new ApiResponseDTO
                 {
                     Status = (int)HttpStatusCode.OK,
