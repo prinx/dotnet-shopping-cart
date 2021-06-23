@@ -58,13 +58,18 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 var items = await _context.CartItems
                     .Where(e => e.UserId == id)
-                    .Select(e => new CartItemDTO { Product = e.Product })
+                    .Select(e => new CartItemDTO {
+                        CartItemId = e.CartItemId,
+                        Quantity = e.Quantity,
+                        CreatedAt = e.CreatedAt,
+                        Product = e.Product
+                    })
                     .ToListAsync();
 
                 return Ok(new ApiResponseDTO
                 {
                     Status = (int)HttpStatusCode.OK,
-                    Success = items.Count != 0,
+                    Success = true,
                     Message = items.Count == 0 ? "No cart item found." : "Found.",
                     Data = items
                 });
