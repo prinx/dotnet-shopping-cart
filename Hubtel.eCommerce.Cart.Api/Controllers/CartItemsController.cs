@@ -22,7 +22,8 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponseDTO<IEnumerable<CartItem>>>> GetCarts(
             [FromQuery(Name = "phoneNumber")] string phoneNumber = "",
-            [FromQuery(Name = "product")] long productId = 0
+            [FromQuery(Name = "product")] long productId = 0,
+            [FromQuery(Name = "quantity")] int quantity = 0
         )
         {
             try
@@ -30,6 +31,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 var items = await _context.CartItems
                     .Where(e => phoneNumber == "" || (e.User.PhoneNumber == phoneNumber))
                     .Where(e => productId == 0 || (productId != 0 && e.ProductId == productId))
+                    .Where(e => quantity == 0 || (quantity != 0 && e.Quantity == quantity))
                     .Include(e => e.User)
                     .Include(e => e.Product)
                     .ToListAsync();
