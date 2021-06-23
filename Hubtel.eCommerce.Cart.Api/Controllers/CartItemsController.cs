@@ -58,7 +58,8 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
             {
                 var items = await _context.CartItems
                     .Where(e => e.UserId == id)
-                    .Select(e => new CartItemDTO {
+                    .Select(e => new CartItemDTO
+                    {
                         CartItemId = e.CartItemId,
                         Quantity = e.Quantity,
                         CreatedAt = e.CreatedAt,
@@ -88,9 +89,9 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             try
             {
-                await ValidateRequestBody(cartItem);
+                await ValidatePostRequestBody(cartItem);
             }
-            catch(ArgumentException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new ApiResponseDTO
                 {
@@ -112,12 +113,12 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                     await _context.SaveChangesAsync();
                     _logger.LogInformation($"Cart item quantity increased for user {cartItem.UserId}");
 
-                    return CreatedAtAction(nameof(GetUserCart), new { id = item.UserId }, new
+                    return CreatedAtAction(nameof(GetUserCart), new { id = item.UserId }, new ApiResponseDTO
                     {
-                        status = HttpStatusCode.Created,
-                        success = true,
-                        message = "Product added to cart successfully",
-                        data = item
+                        Status = (int)HttpStatusCode.Created,
+                        Success = true,
+                        Message = "Product added to cart successfully",
+                        Data = item
                     });
                 }
                 else
@@ -153,6 +154,17 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             try
             {
+                if (cartItem.Quantity <= 0)
+                {
+                    return BadRequest(new ApiResponseDTO
+                    {
+                        Status = (int)HttpStatusCode.BadRequest,
+                        Success = false,
+                        Message = "Invalid product quantity",
+                        Data = cartItem
+                    });
+                }
+
                 CartItem item = await GetDbItem(cartItem);
 
                 if (item == null)
@@ -215,7 +227,7 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
                 .FirstOrDefaultAsync();
         }
 
-        private async Task ValidateRequestBody(CartItemRequestDTO cartItem)
+        private async Task ValidatePostRequestBody(CartItemRequestDTO cartItem)
         {
             if (cartItem.Quantity <= 0)
             {
