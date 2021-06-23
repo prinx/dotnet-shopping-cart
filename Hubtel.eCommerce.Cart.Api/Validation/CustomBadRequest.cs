@@ -12,7 +12,7 @@ namespace Hubtel.eCommerce.Cart.Api.Validation
             Detail = "The inputs supplied to the API are invalid";
             Status = 400;
             ConstructErrorMessages(context);
-            Type = context.HttpContext.TraceIdentifier;
+            //Type = context.HttpContext.TraceIdentifier;
         }
 
         private void ConstructErrorMessages(ActionContext context)
@@ -48,7 +48,12 @@ namespace Hubtel.eCommerce.Cart.Api.Validation
 
         string GetErrorMessage(ModelError modelError)
         {
-            return "Incorrect input data.";
+            if (modelError.ErrorMessage.Contains("Path:"))
+            {
+                return "Invalid input data.";
+            }
+
+            return modelError.ErrorMessage;
         }
     }
 }
