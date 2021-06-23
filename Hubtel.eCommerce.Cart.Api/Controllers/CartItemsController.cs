@@ -4,11 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hubtel.eCommerce.Cart.Api.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Hubtel.eCommerce.Cart.Api.Controllers
 {
