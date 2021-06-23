@@ -11,6 +11,7 @@ namespace Hubtel.eCommerce.Cart.Api.Models
 
         [Required]
         [Phone]
+        [StringLength(maximumLength:12, MinimumLength = 9, ErrorMessage = "Phone number length must have at least 9 characters and at most 12 characters")]
         public string PhoneNumber { get; set; }
     }
 }
