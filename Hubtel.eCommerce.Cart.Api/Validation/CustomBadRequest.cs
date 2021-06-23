@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
+using System.Text.RegularExpressions;
 
 namespace Hubtel.eCommerce.Cart.Api.Validation
 {
@@ -50,7 +51,16 @@ namespace Hubtel.eCommerce.Cart.Api.Validation
         {
             if (modelError.ErrorMessage.Contains("Path:"))
             {
-                return "Invalid input data.";
+                var errorMessage = modelError.ErrorMessage.Substring(0, modelError.ErrorMessage.IndexOf("Path:")).TrimEnd();
+                var pattern = @"System.(\w+)";
+                var matches = Regex.Matches(errorMessage, pattern);
+
+                if (matches.Count == 0)
+                {
+                    return errorMessage;
+                }
+
+                return "The value must be of type "+matches[0].Groups[1].Value;
             }
 
             return modelError.ErrorMessage;

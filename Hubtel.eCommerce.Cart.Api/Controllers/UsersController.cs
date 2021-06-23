@@ -81,6 +81,17 @@ namespace Hubtel.eCommerce.Cart.Api.Controllers
         {
             try
             {
+                if (id != user.UserId)
+                {
+                    return BadRequest(new ApiResponseDTO
+                    {
+                        Status = (int)HttpStatusCode.BadRequest,
+                        Success = false,
+                        Message = "Invalid user id.",
+                        Data = user
+                    });
+                }
+
                 var userToUpdate = await _context.Users.FindAsync(id);
 
                 if (userToUpdate == null)
